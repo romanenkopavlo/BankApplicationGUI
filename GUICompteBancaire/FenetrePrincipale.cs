@@ -43,8 +43,7 @@ namespace GUICompteBancaire
                 catch (Exception ex) 
                 {
                     MessageBox.Show(ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                
+                } 
             }
         }
     }
