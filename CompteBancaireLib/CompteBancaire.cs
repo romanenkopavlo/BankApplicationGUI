@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -70,6 +72,13 @@ namespace CompteBancaireLib
         // Methodes
         public void FaireDepot(decimal montant, DateTime date, string note)
         {
+            if (allTransactions.Count > 0)
+            {
+                if (date < allTransactions[0].Date)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(date), "La date ne peut pas etre anterieure au Solde Initial");
+                }
+            }
             //(#2)
             if (montant <= 0)
             {
@@ -78,10 +87,18 @@ namespace CompteBancaireLib
             //(#1)
             var depot = new Transaction(montant, date, note);
             allTransactions.Add(depot);
+            allTransactions.Sort(new TrieurDeTransaction());
         }
 
         public void FaireRetrait(decimal montant, DateTime date, string note)
         {
+            if (allTransactions.Count > 0)
+            {
+                if (date < allTransactions[0].Date)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(date), "La date ne peut pas etre anterieure au Solde Initial");
+                }
+            }
             //(#3)
             if (montant <= 0)
             {
@@ -93,6 +110,14 @@ namespace CompteBancaireLib
             }
             var retrait = new Transaction(-montant, date, note);
             allTransactions.Add(retrait);
+            allTransactions.Sort(new TrieurDeTransaction());
+        }
+    }
+    public class TrieurDeTransaction : IComparer<Transaction>
+    {
+        public int Compare(Transaction? x, Transaction? y)
+        {
+            return DateTime.Compare(x.Date, y.Date);
         }
     }
 }

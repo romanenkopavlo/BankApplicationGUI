@@ -1,4 +1,6 @@
 using CompteBancaireLib;
+using System.CodeDom.Compiler;
+using System.Windows.Forms.VisualStyles;
 
 namespace GUICompteBancaire
 {
@@ -24,7 +26,7 @@ namespace GUICompteBancaire
             {
                 string fichier = ofd.FileName;
                 string ext = Path.GetExtension(fichier).ToLower();
-                CompteAvecSauvegarde compte;
+                CompteAvecSauvegarde compte = null;
                 try
                 {
                     if (ext == ".csv")
@@ -39,11 +41,48 @@ namespace GUICompteBancaire
                     {
                         MessageBox.Show("Type de fichier inconnu", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+                    bool found = false;
+
+                    foreach (GestionCompte gc in this.MdiChildren)
+                    {
+                        if (gc.Fichier == fichier)
+                        {
+                            found = true;
+                            gc.Activate();
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        GestionCompte nouvelleFenetre = new GestionCompte();
+                        nouvelleFenetre.Fichier = fichier;
+                        nouvelleFenetre.Compte = compte;
+                        nouvelleFenetre.MdiParent = this;
+                        nouvelleFenetre.Show();
+                    }
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                } 
+                }
+            }
+        }
+
+        private void creerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CreationCompte fenetreCreation = new CreationCompte();
+            if (fenetreCreation.ShowDialog() == DialogResult.OK)
+            {
+                string proprietaire = fenetreCreation.textPropietaire.Text;
+                decimal solde = decimal.Parse(fenetreCreation.textSolde.Text);
+                CompteAvecSauvegarde temp = new CompteAvecSauvegarde(proprietaire, solde);
+                
+                GestionCompte nouvelleFenetre = new GestionCompte();
+                nouvelleFenetre.Fichier = "file.csv";
+                nouvelleFenetre.Compte = temp;
+                nouvelleFenetre.MdiParent = this;
+                nouvelleFenetre.Show();
             }
         }
     }
